@@ -3,21 +3,21 @@
 # and limitations under the License.
 #
 # Atlantis for AWS SAM Deployments
-# Starter 00 - Basic API Gateway and Lambda using NodeJS
+# Starter 01 - Basic API Gateway and Lambda using Python
 # Author: Chad Kluck - 63klabs.net
-# Version: v2.0.2/2025-05-17
+# Version: v2.0.1/2025-05-27
 
 # Documentation, Issues/Feature Requests, Latest Updates, and Security Reports on GitHub:
 # https://github.com/63Klabs/atlantis-starter-00-basic-apigw-lambda-nodejs
 
-# Creates a basic web service using API Gateway and Lambda using NodeJS
+# Creates a basic web service using API Gateway and Lambda using Python
 
 # USE WITH:
-# - Atlantis pipeline/template.yml
+# - atlantis/v2/pipeline/template.yml
 
 AWSTemplateFormatVersion: "2010-09-09"
 Transform:  AWS::Serverless-2016-10-31
-Description: "A basic web service using API Gateway and Lambda NodeJS - atlantis-starter-00-basic-apigw-lambda-nodejs"
+Description: "A basic web service using API Gateway and Lambda Python - atlantis-starter-01-basic-apigw-lambda-py"
 
 # =============================================================================
 # META DATA
@@ -37,6 +37,7 @@ Metadata:
           - StageId
           - S3BucketNameOrgPrefix
           - RolePath
+          - PermissionsBoundaryArn
       -
         Label:
           default: "Deployment Environment Information"
@@ -50,7 +51,6 @@ Metadata:
         Parameters:
           - ParameterStoreHierarchy
           - AlarmNotificationEmail
-          - PermissionsBoundaryArn
       -
         Label:
           default: "Lambda Function Settings"
@@ -115,6 +115,20 @@ Parameters:
     AllowedPattern: "^\\/([a-zA-Z0-9-_]+[\\/])+$|^\\/$"
     ConstraintDescription: "May only contain alphanumeric characters, forward slashes, underscores, and dashes. Must begin and end with a slash."
 
+  PermissionsBoundaryArn:
+    Type: String
+    Description: "Permissions Boundary is a policy attached to a role to further restrict the permissions of the role. Your organization may or may not require boundaries. If left empty, no permissions boundary will be used."
+    Default: ""
+    AllowedPattern: "^$|^arn:aws:iam::\\d{12}:policy\\/[\\w+=,.@\\-\\/]*[\\w+=,.@\\-]+$"
+    ConstraintDescription: "Must be empty or a valid IAM Policy ARN in the format: arn:aws:iam::{account_id}:policy/{policy_name}"
+
+  ParameterStoreHierarchy:
+    Type: String
+    Description: "Parameters specific to the application may be organized within a hierarchy based on your organizational or operations structure. For example, /Finance/ops/ for this value would then generate /Finance/ops/<DeployEnvironment>/<Prefix>-<ProjectId>-<StageId>/<parameterName>. Must either be a single '/' or begin and end with a '/'."
+    Default: "/"
+    AllowedPattern: "^\\/([a-zA-Z0-9_.\\-]*[\\/])+$|^\\/$"
+    ConstraintDescription: "Must only contain alpha-numeric, dashes, underscores, or slashes. Must be a single slash or begin and end with a slash. (/Finance/, /Finance/ops/, or /)"
+
   # ---------------------------------------------------------------------------
   # Deployment Environment Identification
 
@@ -147,25 +161,11 @@ Parameters:
   # ---------------------------------------------------------------------------
   # External Resources and Alarm Notifications
 
-  ParameterStoreHierarchy:
-    Type: String
-    Description: "Parameters specific to the application may be organized within a hierarchy based on your organizational or operations structure. For example, /Finance/ops/ for this value would then generate /Finance/ops/<DeployEnvironment>/<Prefix>-<ProjectId>-<StageId>/<parameterName>. Must either be a single '/' or begin and end with a '/'."
-    Default: "/"
-    AllowedPattern: "^\\/([a-zA-Z0-9_.\\-]*[\\/])+$|^\\/$"
-    ConstraintDescription: "Must only contain alpha-numeric, dashes, underscores, or slashes. Must be a single slash or begin and end with a slash. (/Finance/, /Finance/ops/, or /)"
-
   AlarmNotificationEmail:
     Type: String
     Description: "Email address to send notifications to when alarms are triggered. Be sure to check the inbox as you will need to confirm the subscription."
     AllowedPattern: "^[\\w\\-\\.]+@([\\w\\-]+\\.)+[\\w\\-]{2,4}$"
     ConstraintDescription: "A valid email address"
-
-  PermissionsBoundaryArn:
-    Type: String
-    Description: "Permissions Boundary is a policy attached to a role to further restrict the permissions of the role. Your organization may or may not require boundaries. If left empty, no permissions boundary will be used."
-    Default: ""
-    AllowedPattern: "^$|^arn:aws:iam::\\d{12}:policy\\/[\\w+=,.@\\-\\/]*[\\w+=,.@\\-]+$"
-    ConstraintDescription: "Must be empty or a valid IAM Policy ARN in the format: arn:aws:iam::{account_id}:policy/{policy_name}"
 
   # ---------------------------------------------------------------------------
   # Lambda Function Settings
@@ -179,10 +179,11 @@ Parameters:
 
   FunctionMaxMemoryInMB:
     Type: Number
-    Description: "If you are handling large responses, you will need to increase the size. Monitor CloudWatch logs"
-    Default: 128
-    AllowedValues: [128, 192, 256, 320, 384, 448, 512]
-    ConstraintDescription: "Min 128, Max 512 in increments of 64"
+    Description: "If you are handling large responses, you will need to increase the size. Monitor CloudWatch logs. 1024 MB is a good starting point for most API web service applications."
+    Default: 1024 # 1 GB
+    MinValue: 128
+    MaxValue: 10240 # 10 GB
+    ConstraintDescription: "Must be between 128 and 1024 MB (10 GB). 1024 MB is a good starting point for most API web service applications."
 
   FunctionArchitecture:
     Type: String
@@ -324,7 +325,7 @@ Resources:
 
       CodeUri: src/
       Handler: index.handler
-      Runtime: nodejs22.x # https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html
+      Runtime: Python3.13 # https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html
       Architectures:
         - !Ref FunctionArchitecture # arm64 has better processing than default x86_64 - but layers and binaries must support
       Timeout: !Ref FunctionTimeOutInSeconds
@@ -332,9 +333,8 @@ Resources:
 
       Environment:
         Variables:
-          NODE_ENV: !If [ IsProduction, "production",  "development"] # Note we are past the build installation phase so devDependencies are not installed, however, we can utilize certain tools in development mode
           DEPLOY_ENVIRONMENT: !Ref DeployEnvironment # PROD, TEST, DEV - a different category of environment
-          LOG_LEVEL: !If [ IsProduction, "0",  "5"] # 0 for prod, 2-5 for non-prod
+          LOG_LEVEL: !If [ IsProduction, "INFO",  "DEBUG"] # 20 for prod, 10 for non-prod (used by logging library)
           PARAM_STORE_PATH: !Ref ParameterStoreHierarchy # Path to instance specific params /Finance/ops/PROD/acme-myapp-prod/
           LAMBDA_TIMEOUT_IN_SEC: !Ref FunctionTimeOutInSeconds # so we can calculate any external connection timeout in our code
 
