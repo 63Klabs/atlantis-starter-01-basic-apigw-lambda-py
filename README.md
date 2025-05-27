@@ -1,12 +1,11 @@
-# Hello, World
+# Basic API Gateway with Lambda Function Written in Node.js
 
-The main and test branches are intentionally left blank except for this file.
+> For use with template-pipeline.yml which can be deployed using [Atlantis Configuration Repository for Serverless Deployments using AWS SAM](https://github.com/63Klabs/atlantis-cfn-configuration-repo-for-serverless-deployments)
 
-Check out the dev branch to get started.
+A very simple example to demonstrate Atlantis Template for AWS CodePipeline to provision a web service that utilizes API Gateway and a simple Lambda function written in Node.js.
 
-The dev branch of this repository was seeded from the following S3 location:
-s3://63klabs/atlantis/app-starters/v2/00-basic-apigw-lambda-nodejs.zip
+> Note: To keep this example VERY basic and simple, concepts such as routing, caching, and advanced monitoring are not used. For near production-ready examples, review the the other Atlantis starter applications.
 
-Clone URL (HTTPS): https://git-codecommit.us-east-2.amazonaws.com/v1/repos/atlantis-starter-01-basic-apigw-lambda-py
+## Tutorial
 
-Clone URL (SSH): ssh://git-codecommit.us-east-2.amazonaws.com/v1/repos/atlantis-starter-01-basic-apigw-lambda-py
+Read the [Atlantis Tutorials introductory page](https://github.com/63Klabs/atlantis-tutorials), then perform the steps outlined in the [Basic API Gateway with Lambda Node.js tutorial](https://github.com/63Klabs/atlantis-tutorials/tree/main/tutorials/00-basic-api-gateway-with-lambda-written-in-node).
