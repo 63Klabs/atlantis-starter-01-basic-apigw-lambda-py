@@ -10,40 +10,44 @@ phases:
     runtime-versions:
       nodejs: latest
     commands:
-
+      
       - ls -l -a
+
+      - python --version
+      - echo "NODE_ENV is $NODE_ENV"
+
+      # Configure pip cache directory
+      - mkdir -p /root/.cache/pip
+      - pip config set global.cache-dir /root/.cache/pip
 
       # Upgrade AWS CLI to the latest version
       - pip install --upgrade awscli
 
-      - python --version
-
-      # Set npm caching (This 'offline' cache is still tar zipped, but it helps.) - https://blog.mechanicalrock.io/2019/02/03/monorepos-aws-codebuild.html
-      - npm config -g set prefer-offline true
-      - npm config -g set cache /root/.npm
-      - npm config get cache
+      # Install Python dependencies for Build Scripts if requirements.txt exists
+      - |
+        if [ -f "build-scripts/requirements.txt" ]; then
+          echo "Installing Python dependencies for build scripts"
+          pip install -r build-scripts/requirements.txt
+        else
+          echo "No build-scripts/requirements.txt found, skipping pip install"
+        fi
 
   pre_build:
     commands:
-
-      # Display the current value of NODE_ENV
-      - echo "NODE_ENV is $NODE_ENV"
       
-      # Install dependencies needed for application
-      - ls -l -a
-      - cd application-infrastructure/src
-      - npm install
-
-      # FAIL the build if npm audit has vulnerabilities it can't fix
-      # Perform a fix to move us forward, then check to make sure there were no unresolved high fixes
-      - npm audit fix --force
-      - npm audit --audit-level=high
-      
-      # Go back to application-infrastructure directory
-      - cd ..
-      
+      # Install Python dependencies for Application if requirements.txt exists
+      - |
+        if [ -f "application-infrastructure/src/requirements.txt" ]; then
+          echo "Installing Python dependencies for build scripts"
+          pip install -r application-infrastructure/src/requirements.txt
+        else
+          echo "No application-infrastructure/src/requirements.txt found, skipping pip install"
+        fi
+            
   build:
     commands:
+
+      - cd application-infrastructure
 
       # There is sometimes a bug that causes the alias to not be updated correctly (see comment in template.yml for AppFunction.Properties.AutoPublishCodeSha256)
       - python3 ./build-scripts/update_template_timestamp.py template.yml
@@ -64,4 +68,4 @@ artifacts:
 # add cache
 cache:
   paths:
-    - '/root/.npm/**/*'
+    - '/root/.cache/pip/**/*'
