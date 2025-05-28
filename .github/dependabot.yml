@@ -12,8 +12,3 @@ updates:
     schedule:
       interval: "weekly"
 
-  # Maintain dependencies for npm
-  - package-ecosystem: "npm"
-    directory: "/application-infrastructure/src/"
-    schedule:
-      interval: "weekly"
