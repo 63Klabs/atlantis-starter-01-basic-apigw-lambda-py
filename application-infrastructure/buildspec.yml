@@ -13,17 +13,16 @@ phases:
       
       - ls -l -a
 
-      - python --version
-      - echo "NODE_ENV is $NODE_ENV"
+      # Build Environment information for debugging purposes
+      - python3 --version
+      - node --version
+      - aws --version
 
       # Configure pip cache directory
       - mkdir -p /root/.cache/pip
       - pip config set global.cache-dir /root/.cache/pip
 
-      # Upgrade AWS CLI to the latest version
-      - pip install --upgrade awscli
-
-      # Install Python dependencies for Build Scripts if requirements.txt exists
+      # Build Environment: Install Python dependencies for Build Scripts if build-scripts/requirements.txt exists
       - |
         if [ -f "build-scripts/requirements.txt" ]; then
           echo "Installing Python dependencies for build scripts"
@@ -35,7 +34,7 @@ phases:
   pre_build:
     commands:
       
-      # Install Python dependencies for Application if requirements.txt exists
+      # Application Environment: Install Python dependencies needed for application environment if requirements.txt exists
       - |
         if [ -f "application-infrastructure/src/requirements.txt" ]; then
           echo "Installing Python dependencies for build scripts"
