@@ -64,6 +64,7 @@ Metadata:
           - ApiPathBase
           - LogRetentionInDaysForPROD
           - LogRetentionInDaysForDEVTEST
+          - ApiGatewayLoggingEnabled
 
 # =============================================================================
 # PARAMETERS
