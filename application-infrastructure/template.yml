@@ -5,7 +5,7 @@
 # Atlantis for AWS SAM Deployments
 # Starter 01 - Basic API Gateway and Lambda using Python
 # Author: Chad Kluck - 63klabs.net
-# Version: v2.0.2/2025-09-03
+# Version: v2.0.3/2025-11-25
 
 # Documentation, Issues/Feature Requests, Latest Updates, and Security Reports on GitHub:
 # https://github.com/63Klabs/atlantis-starter-00-basic-apigw-lambda-nodejs
@@ -339,7 +339,7 @@ Resources:
 
       CodeUri: src/
       Handler: index.handler
-      Runtime: python3.13 # https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html
+      Runtime: python3.14 # https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html
       Architectures:
         - !Ref FunctionArchitecture # arm64 has better processing than default x86_64 - but layers and binaries must support
       Timeout: !Ref FunctionTimeOutInSeconds
