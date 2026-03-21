@@ -6,7 +6,7 @@ A very simple example to demonstrate Atlantis Template for AWS CodePipeline to p
 |---|---|---|
 | **Languages** | Python, Shell | Python |
 | **Frameworks** | Atlantis | Atlantis |
-| **Features** | - | API Gateway, Lambda, CloudWatch Logs, CloudWatch Alarms |
+| **Features** | SSM Parameters | API Gateway, Lambda, CloudWatch Logs, CloudWatch Alarms |
 
 > **Ready-to-Deploy-and-Run** with the [63Klabs Atlantis Templates and Scripts Platform for Serverless Deployments on AWS](https://github.com/63Klabs/atlantis)
 
