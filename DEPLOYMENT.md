@@ -24,7 +24,7 @@ Using the Atlantis SAM Config scripts in your organization's central infrastruct
 
 ```bash
 ./cli/create_repo.py YOUR_REPO_NAME
-# Choose 00-basic-apigw-lambda-nodejs.zip
+# Choose 01-basic-apigw-lambda-py.zip
 
 # Create a pipeline for the test branch
 ./cli/config.py pipeline PREFIX YOUR_PROJECT_ID test
